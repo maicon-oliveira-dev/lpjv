@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Assessoria de marketing digital focada em crescimento, performance e execução."
+    />
+    <title>JV Marketing Digital</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <script src="script.js" defer></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="brand brand--header" href="#inicio" aria-label="JV Marketing Digital">
+          <img src="assets/img/logo-header.png" alt="JV Marketing Digital" />
+        </a>
+
+        <button class="menu-toggle" type="button" aria-expanded="false" aria-label="Abrir menu">
+          <span></span>
+          <span></span>
+        </button>
+
+        <nav class="main-nav" aria-label="Navegação principal">
+          <a href="#realidade">A Realidade</a>
+          <a href="#servicos">Serviços</a>
+          <a href="#prova-social">Prova Social</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero" id="inicio">
+        <div class="hero-inner">
+          <div class="hero-copy reveal">
+            <p class="eyebrow">Assessoria de marketing digital</p>
+            <h1>
+              Seu marketing está<br />
+              gerando movimento<br />
+              <strong>mas não crescimento?</strong>
+            </h1>
+            <p class="hero-intro">
+              A JV <strong>não aceita resultado fraco!</strong> Não<br class="desktop-only" />
+              entregamos apenas relatórios bonitos<br class="desktop-only" />
+              enquanto sua <strong>verba some sem retorno.</strong>
+            </p>
+
+            <ul class="benefits" aria-label="Benefícios">
+              <li>
+                <span class="check" aria-hidden="true"></span>
+                <span><strong>100%</strong> diagnóstico<br />gratuito e sem enrolação</span>
+              </li>
+              <li>
+                <span class="check" aria-hidden="true"></span>
+                <span><strong>Estratégia personalizada</strong><br />para a da sua empresa</span>
+              </li>
+              <li>
+                <span class="check" aria-hidden="true"></span>
+                <span><strong>Criativos e campanhas</strong><br />com foco em conversão</span>
+              </li>
+            </ul>
+
+            <img
+              class="partners"
+              src="assets/img/partners.png"
+              alt="Google Partner e Meta Business Partner"
+            />
+          </div>
+
+          <div class="lead-card reveal reveal-delay-1">
+            <form class="lead-form" data-lead-form>
+              <h2>Solicite seu<br />diagnóstico gratuito</h2>
+
+              <label>
+                <span>E-mail corporativo</span>
+                <input
+                  type="email"
+                  name="email"
+                  autocomplete="email"
+                  placeholder="EXEMPLO@EMPRESA.COM"
+                  required
+                />
+              </label>
+
+              <label>
+                <span>WhatsApp / Telefone</span>
+                <input
+                  type="tel"
+                  name="phone"
+                  autocomplete="tel"
+                  inputmode="tel"
+                  placeholder="(00) 00000-0000"
+                  required
+                />
+              </label>
+
+              <label>
+                <span>Faturamento mensal aproximado</span>
+                <select name="revenue" required>
+                  <option value="" selected disabled>SELECIONE UMA FAIXA</option>
+                  <option>Até R$ 30 mil</option>
+                  <option>De R$ 30 mil a R$ 100 mil</option>
+                  <option>De R$ 100 mil a R$ 500 mil</option>
+                  <option>Acima de R$ 500 mil</option>
+                </select>
+              </label>
+
+              <label>
+                <span>Investimento atual em marketing/mês</span>
+                <select name="investment" required>
+                  <option value="" selected disabled>SELECIONE UMA FAIXA</option>
+                  <option>Ainda não invisto</option>
+                  <option>Até R$ 3 mil</option>
+                  <option>De R$ 3 mil a R$ 10 mil</option>
+                  <option>Acima de R$ 10 mil</option>
+                </select>
+              </label>
+
+              <button class="cta-button" type="submit">
+                Agende sua reunião <span aria-hidden="true">→</span>
+              </button>
+              <p class="form-note">Aguarde uma ligação até 24h</p>
+              <p class="form-status" role="status" aria-live="polite"></p>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <section class="reality reveal" id="realidade" aria-label="A realidade">
+        <img
+          src="assets/img/reality-section.png"
+          alt="Sua agência atual está te vendendo ocupação, não resultado. Reconheça os sinais."
+        />
+      </section>
+
+      <section class="services" id="servicos">
+        <div class="section-heading reveal">
+          <p class="tracking-title">Serviços</p>
+          <h2>Simples de entender.<br /><strong>Profundo na execução.</strong></h2>
+        </div>
+
+        <div class="service-carousel reveal" aria-roledescription="carrossel">
+          <div class="service-tabs" role="tablist" aria-label="Selecione um serviço">
+            <button
+              class="service-tab is-active"
+              type="button"
+              role="tab"
+              aria-selected="true"
+              aria-controls="service-panel"
+              data-service="0"
+            >
+              websites
+            </button>
+            <button
+              class="service-tab"
+              type="button"
+              role="tab"
+              aria-selected="false"
+              aria-controls="service-panel"
+              data-service="1"
+            >
+              tráfego pago
+            </button>
+            <button
+              class="service-tab"
+              type="button"
+              role="tab"
+              aria-selected="false"
+              aria-controls="service-panel"
+              data-service="2"
+            >
+              design gráfico
+            </button>
+            <button
+              class="service-tab"
+              type="button"
+              role="tab"
+              aria-selected="false"
+              aria-controls="service-panel"
+              data-service="3"
+            >
+              estruturação estratégica
+            </button>
+          </div>
+
+          <div
+            class="service-stage"
+            id="service-panel"
+            role="tabpanel"
+            tabindex="0"
+            aria-live="polite"
+          >
+            <button class="carousel-arrow carousel-arrow--prev" type="button" aria-label="Serviço anterior">
+              ‹
+            </button>
+            <img
+              class="service-image"
+              src="assets/img/service-website.png"
+              alt="Website: construção de sites e landing pages sob medida, responsivos e seguros."
+            />
+            <button class="carousel-arrow carousel-arrow--next" type="button" aria-label="Próximo serviço">
+              ›
+            </button>
+          </div>
+
+          <div class="carousel-dots" aria-label="Posição do carrossel">
+            <button class="is-active" type="button" data-service="0" aria-label="Ir para websites"></button>
+            <button type="button" data-service="1" aria-label="Ir para tráfego pago"></button>
+            <button type="button" data-service="2" aria-label="Ir para design gráfico"></button>
+            <button type="button" data-service="3" aria-label="Ir para estruturação estratégica"></button>
+          </div>
+        </div>
+      </section>
+
+      <section class="social-proof" id="prova-social">
+        <div class="proof-inner">
+          <p class="tracking-title reveal">Feedback</p>
+          <div class="reviews">
+            <article class="review-card reveal">
+              <img src="assets/img/review-google-1.png" alt="Avaliação positiva da NBcert Certificações" />
+            </article>
+            <article class="review-card reveal reveal-delay-1">
+              <img src="assets/img/review-google-2.png" alt="Avaliação positiva da MS Policarbonato ADM" />
+            </article>
+            <article class="review-card reveal reveal-delay-2">
+              <img src="assets/img/review-whatsapp.png" alt="Feedback positivo recebido no WhatsApp" />
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="final-cta" id="contato">
+        <div class="final-inner">
+          <div class="final-copy reveal">
+            <img src="assets/img/logo-footer.png" alt="JV Marketing Digital" />
+            <h2>
+              Descubra quais serviços<br />
+              fazem <strong>sentido para o<br />momento da sua empresa.</strong>
+            </h2>
+            <p>
+              Preencha o formulário. Vamos entender seu<br class="desktop-only" />
+              cenário, seu faturamento, sua verba de<br class="desktop-only" />
+              projeto e indicar a melhor estrutura entre<br class="desktop-only" />
+              website, tráfego, design e estratégia.
+            </p>
+          </div>
+
+          <div class="lead-card lead-card--compact reveal reveal-delay-1">
+            <form class="lead-form" data-lead-form>
+              <h2>Solicite seu<br />diagnóstico gratuito</h2>
+
+              <label>
+                <span>E-mail corporativo</span>
+                <input
+                  type="email"
+                  name="email"
+                  autocomplete="email"
+                  placeholder="EXEMPLO@EMPRESA.COM"
+                  required
+                />
+              </label>
+
+              <label>
+                <span>WhatsApp / Telefone</span>
+                <input
+                  type="tel"
+                  name="phone"
+                  autocomplete="tel"
+                  inputmode="tel"
+                  placeholder="(00) 00000-0000"
+                  required
+                />
+              </label>
+
+              <label>
+                <span>Faturamento mensal aproximado</span>
+                <select name="revenue" required>
+                  <option value="" selected disabled>SELECIONE UMA FAIXA</option>
+                  <option>Até R$ 30 mil</option>
+                  <option>De R$ 30 mil a R$ 100 mil</option>
+                  <option>De R$ 100 mil a R$ 500 mil</option>
+                  <option>Acima de R$ 500 mil</option>
+                </select>
+              </label>
+
+              <label>
+                <span>Investimento atual em marketing/mês</span>
+                <select name="investment" required>
+                  <option value="" selected disabled>SELECIONE UMA FAIXA</option>
+                  <option>Ainda não invisto</option>
+                  <option>Até R$ 3 mil</option>
+                  <option>De R$ 3 mil a R$ 10 mil</option>
+                  <option>Acima de R$ 10 mil</option>
+                </select>
+              </label>
+
+              <button class="cta-button" type="submit">
+                Agende sua reunião <span aria-hidden="true">→</span>
+              </button>
+              <p class="form-note">Aguarde uma ligação até 24h</p>
+              <p class="form-status" role="status" aria-live="polite"></p>
+            </form>
+          </div>
+        </div>
+
+        <footer>
+          <p>© 2026 JV Digital — Todos os direitos reservados ·</p>
+          <a href="#privacidade">Política de Privacidade</a>
+        </footer>
+      </section>
+    </main>
+  </body>
+</html>
