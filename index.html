@@ -14,6 +14,12 @@
       href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap"
       rel="stylesheet"
     />
+    <script>
+      document.documentElement.classList.add("js");
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        document.documentElement.classList.add("reduced-motion");
+      }
+    </script>
     <link rel="stylesheet" href="assets/css/styles.css" />
     <script src="assets/js/script.js" defer></script>
   </head>
@@ -40,7 +46,7 @@
     <main>
       <section class="hero" id="inicio">
         <div class="hero-inner">
-          <div class="hero-copy reveal">
+          <div class="hero-copy reveal reveal-text">
             <p class="eyebrow">Assessoria de marketing digital</p>
             <h1>
               Seu marketing está<br />
@@ -75,7 +81,7 @@
             />
           </div>
 
-          <div class="lead-card reveal reveal-delay-1">
+          <div class="lead-card reveal reveal-panel reveal-delay-1" data-depth="card" data-glow="card">
             <form class="lead-form" data-lead-form>
               <h2>Solicite seu<br />diagnóstico gratuito</h2>
 
@@ -134,7 +140,7 @@
         </div>
       </section>
 
-      <section class="reality reveal" id="realidade" aria-label="A realidade">
+      <section class="reality reveal reveal-media" id="realidade" aria-label="A realidade">
         <img
           src="assets/img/reality-section.png"
           alt="Sua agência atual está te vendendo ocupação, não resultado. Reconheça os sinais."
@@ -142,12 +148,12 @@
       </section>
 
       <section class="services" id="servicos">
-        <div class="section-heading reveal">
+        <div class="section-heading reveal reveal-text">
           <p class="tracking-title">Serviços</p>
           <h2>Simples de entender.<br /><strong>Profundo na execução.</strong></h2>
         </div>
 
-        <div class="service-carousel reveal" aria-roledescription="carrossel">
+        <div class="service-carousel reveal reveal-panel" aria-roledescription="carrossel">
           <div class="service-tabs" role="tablist" aria-label="Selecione um serviço">
             <button
               class="service-tab is-active"
@@ -197,6 +203,8 @@
             role="tabpanel"
             tabindex="0"
             aria-live="polite"
+            data-depth="media"
+            data-glow="media"
           >
             <button class="carousel-arrow carousel-arrow--prev" type="button" aria-label="Serviço anterior">
               ‹
@@ -224,13 +232,13 @@
         <div class="proof-inner">
           <p class="tracking-title reveal">Feedback</p>
           <div class="reviews">
-            <article class="review-card reveal">
+            <article class="review-card reveal reveal-media" data-depth="review">
               <img src="assets/img/review-google-1.png" alt="Avaliação positiva da NBcert Certificações" />
             </article>
-            <article class="review-card reveal reveal-delay-1">
+            <article class="review-card reveal reveal-media reveal-delay-1" data-depth="review">
               <img src="assets/img/review-google-2.png" alt="Avaliação positiva da MS Policarbonato ADM" />
             </article>
-            <article class="review-card reveal reveal-delay-2">
+            <article class="review-card reveal reveal-media reveal-delay-2" data-depth="review">
               <img src="assets/img/review-whatsapp.png" alt="Feedback positivo recebido no WhatsApp" />
             </article>
           </div>
@@ -239,7 +247,7 @@
 
       <section class="final-cta" id="contato">
         <div class="final-inner">
-          <div class="final-copy reveal">
+          <div class="final-copy reveal reveal-text">
             <img src="assets/img/logo-footer.png" alt="JV Marketing Digital" />
             <h2>
               Descubra quais serviços<br />
@@ -253,7 +261,7 @@
             </p>
           </div>
 
-          <div class="lead-card lead-card--compact reveal reveal-delay-1">
+          <div class="lead-card lead-card--compact reveal reveal-panel reveal-delay-1" data-depth="card" data-glow="card">
             <form class="lead-form" data-lead-form>
               <h2>Solicite seu<br />diagnóstico gratuito</h2>
 
