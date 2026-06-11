@@ -82,8 +82,36 @@
           </div>
 
           <div class="lead-card reveal reveal-panel reveal-delay-1" data-depth="card" data-glow="card">
-            <form class="lead-form" data-lead-form>
+            <form
+              id="lead-form-hero"
+              class="lead-form"
+              data-lead-form
+              method="post"
+              action="send-diagnostico.php"
+            >
               <h2>Solicite seu<br />diagnóstico gratuito</h2>
+
+              <input type="hidden" name="form_origin" value="hero" />
+              <input type="hidden" name="page_url" value="" />
+              <input type="hidden" name="utm_source" value="" />
+              <input type="hidden" name="utm_medium" value="" />
+              <input type="hidden" name="utm_campaign" value="" />
+              <input type="hidden" name="utm_content" value="" />
+              <input type="hidden" name="utm_term" value="" />
+
+              <div
+                aria-hidden="true"
+                style="position: absolute; left: -10000px; top: auto; width: 1px; height: 1px; overflow: hidden;"
+              >
+                <label for="company-site-hero">Site da empresa</label>
+                <input
+                  id="company-site-hero"
+                  type="text"
+                  name="company_site"
+                  tabindex="-1"
+                  autocomplete="off"
+                />
+              </div>
 
               <label>
                 <span>E-mail corporativo</span>
@@ -112,10 +140,10 @@
                 <span>Faturamento mensal aproximado</span>
                 <select name="revenue" required>
                   <option value="" selected disabled>SELECIONE UMA FAIXA</option>
-                  <option>Até R$ 30 mil</option>
-                  <option>De R$ 30 mil a R$ 100 mil</option>
-                  <option>De R$ 100 mil a R$ 500 mil</option>
-                  <option>Acima de R$ 500 mil</option>
+                  <option value="ate_30_mil">Até R$ 30 mil</option>
+                  <option value="de_30_mil_a_100_mil">De R$ 30 mil a R$ 100 mil</option>
+                  <option value="de_100_mil_a_500_mil">De R$ 100 mil a R$ 500 mil</option>
+                  <option value="acima_500_mil">Acima de R$ 500 mil</option>
                 </select>
               </label>
 
@@ -123,10 +151,10 @@
                 <span>Investimento atual em marketing/mês</span>
                 <select name="investment" required>
                   <option value="" selected disabled>SELECIONE UMA FAIXA</option>
-                  <option>Ainda não invisto</option>
-                  <option>Até R$ 3 mil</option>
-                  <option>De R$ 3 mil a R$ 10 mil</option>
-                  <option>Acima de R$ 10 mil</option>
+                  <option value="ainda_nao_invisto">Ainda não invisto</option>
+                  <option value="ate_3_mil">Até R$ 3 mil</option>
+                  <option value="de_3_mil_a_10_mil">De R$ 3 mil a R$ 10 mil</option>
+                  <option value="acima_10_mil">Acima de R$ 10 mil</option>
                 </select>
               </label>
 
@@ -262,8 +290,36 @@
           </div>
 
           <div class="lead-card lead-card--compact reveal reveal-panel reveal-delay-1" data-depth="card" data-glow="card">
-            <form class="lead-form" data-lead-form>
+            <form
+              id="lead-form-final"
+              class="lead-form"
+              data-lead-form
+              method="post"
+              action="send-diagnostico.php"
+            >
               <h2>Solicite seu<br />diagnóstico gratuito</h2>
+
+              <input type="hidden" name="form_origin" value="final_cta" />
+              <input type="hidden" name="page_url" value="" />
+              <input type="hidden" name="utm_source" value="" />
+              <input type="hidden" name="utm_medium" value="" />
+              <input type="hidden" name="utm_campaign" value="" />
+              <input type="hidden" name="utm_content" value="" />
+              <input type="hidden" name="utm_term" value="" />
+
+              <div
+                aria-hidden="true"
+                style="position: absolute; left: -10000px; top: auto; width: 1px; height: 1px; overflow: hidden;"
+              >
+                <label for="company-site-final">Site da empresa</label>
+                <input
+                  id="company-site-final"
+                  type="text"
+                  name="company_site"
+                  tabindex="-1"
+                  autocomplete="off"
+                />
+              </div>
 
               <label>
                 <span>E-mail corporativo</span>
@@ -292,10 +348,10 @@
                 <span>Faturamento mensal aproximado</span>
                 <select name="revenue" required>
                   <option value="" selected disabled>SELECIONE UMA FAIXA</option>
-                  <option>Até R$ 30 mil</option>
-                  <option>De R$ 30 mil a R$ 100 mil</option>
-                  <option>De R$ 100 mil a R$ 500 mil</option>
-                  <option>Acima de R$ 500 mil</option>
+                  <option value="ate_30_mil">Até R$ 30 mil</option>
+                  <option value="de_30_mil_a_100_mil">De R$ 30 mil a R$ 100 mil</option>
+                  <option value="de_100_mil_a_500_mil">De R$ 100 mil a R$ 500 mil</option>
+                  <option value="acima_500_mil">Acima de R$ 500 mil</option>
                 </select>
               </label>
 
@@ -303,10 +359,10 @@
                 <span>Investimento atual em marketing/mês</span>
                 <select name="investment" required>
                   <option value="" selected disabled>SELECIONE UMA FAIXA</option>
-                  <option>Ainda não invisto</option>
-                  <option>Até R$ 3 mil</option>
-                  <option>De R$ 3 mil a R$ 10 mil</option>
-                  <option>Acima de R$ 10 mil</option>
+                  <option value="ainda_nao_invisto">Ainda não invisto</option>
+                  <option value="ate_3_mil">Até R$ 3 mil</option>
+                  <option value="de_3_mil_a_10_mil">De R$ 3 mil a R$ 10 mil</option>
+                  <option value="acima_10_mil">Acima de R$ 10 mil</option>
                 </select>
               </label>
 

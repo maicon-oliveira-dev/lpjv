@@ -22,6 +22,22 @@ const services = [
 ];
 
 const root = document.documentElement;
+const leadButtonContentCache = new WeakMap();
+const leadRequestTimeoutMs = 12000;
+const leadStatusMessages = {
+  loading: "Enviando...",
+  success: "Solicitação enviada com sucesso.",
+  validation: "Revise os dados informados.",
+  rateLimit: "Aguarde alguns instantes antes de tentar novamente.",
+  timeout: "O envio demorou mais do que o esperado. Tente novamente.",
+  network: "Não foi possível enviar agora. Verifique sua conexão e tente novamente.",
+  server: "Não foi possível enviar agora. Tente novamente.",
+};
+const leadFormAnchorMap = {
+  hero: "inicio",
+  final_cta: "contato",
+};
+const leadTrackingFieldNames = ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"];
 
 function observeMotionPreference() {
   const reduceMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -352,11 +368,112 @@ function initPremiumButtons(state) {
   });
 }
 
+function getLeadFormOrigin(form) {
+  return form.querySelector('input[name="form_origin"]')?.value ?? "";
+}
+
+function getLeadFormAnchor(form) {
+  const origin = getLeadFormOrigin(form);
+  return leadFormAnchorMap[origin] ?? form.closest("section[id]")?.id ?? "contato";
+}
+
+function cacheLeadButtonContent(button) {
+  if (leadButtonContentCache.has(button)) return;
+
+  leadButtonContentCache.set(
+    button,
+    [...button.childNodes].map((node) => node.cloneNode(true)),
+  );
+}
+
+function restoreLeadButtonContent(button) {
+  const cachedNodes = leadButtonContentCache.get(button);
+  if (!cachedNodes) return;
+
+  button.replaceChildren(...cachedNodes.map((node) => node.cloneNode(true)));
+}
+
+function setLeadFormStatus(statusElement, message) {
+  statusElement.textContent = message;
+}
+
+function setLeadFormBusyState(form, button, busy) {
+  form.setAttribute("aria-busy", String(busy));
+  button.disabled = busy;
+  button.setAttribute("aria-disabled", String(busy));
+  form.dataset.submitting = busy ? "true" : "false";
+}
+
+function populateLeadTrackingFields(form) {
+  const currentUrl = new URL(window.location.href);
+  const pageUrlInput = form.querySelector('input[name="page_url"]');
+  if (pageUrlInput) {
+    pageUrlInput.value = currentUrl.toString();
+  }
+
+  leadTrackingFieldNames.forEach((fieldName) => {
+    const input = form.querySelector(`input[name="${fieldName}"]`);
+    if (!input) return;
+
+    input.value = currentUrl.searchParams.get(fieldName) ?? "";
+  });
+}
+
+function getLeadResponseMessage(responseStatus, data) {
+  if (data && typeof data.message === "string" && data.message.trim()) {
+    return data.message.trim();
+  }
+
+  if (responseStatus === 400) return leadStatusMessages.validation;
+  if (responseStatus === 429) return leadStatusMessages.rateLimit;
+  if (responseStatus === 500 || responseStatus === 503) return leadStatusMessages.server;
+
+  return leadStatusMessages.server;
+}
+
+function handleLeadFallbackStatus(forms) {
+  const currentUrl = new URL(window.location.href);
+  const status = currentUrl.searchParams.get("status");
+  if (!status || !["success", "error"].includes(status)) return;
+
+  const hashId = window.location.hash.replace(/^#/, "");
+  const targetForm =
+    forms.find((form) => getLeadFormAnchor(form) === hashId) ??
+    forms.find((form) => getLeadFormOrigin(form) === "final_cta") ??
+    forms[0];
+
+  const statusElement = targetForm?.querySelector(".form-status");
+  if (statusElement) {
+    setLeadFormStatus(
+      statusElement,
+      status === "success" ? leadStatusMessages.success : leadStatusMessages.server,
+    );
+  }
+
+  currentUrl.searchParams.delete("status");
+  const cleanSearch = currentUrl.searchParams.toString();
+  const cleanUrl = `${currentUrl.pathname}${cleanSearch ? `?${cleanSearch}` : ""}${currentUrl.hash}`;
+  window.history.replaceState({}, "", cleanUrl);
+}
+
 function initLeadForms() {
-  document.querySelectorAll("[data-lead-form]").forEach((form) => {
+  const forms = [...document.querySelectorAll("[data-lead-form]")];
+  if (!forms.length) return;
+
+  const canEnhanceSubmission =
+    typeof window.fetch === "function" &&
+    typeof window.AbortController === "function" &&
+    typeof window.FormData === "function";
+
+  forms.forEach((form) => {
     const phoneInput = form.querySelector('input[type="tel"]');
-    const status = form.querySelector(".form-status");
-    if (!phoneInput || !status) return;
+    const statusElement = form.querySelector(".form-status");
+    const button = form.querySelector(".cta-button");
+    if (!phoneInput || !statusElement || !button) return;
+
+    cacheLeadButtonContent(button);
+    populateLeadTrackingFields(form);
+    setLeadFormBusyState(form, button, false);
 
     phoneInput.addEventListener("input", () => {
       const digits = phoneInput.value.replace(/\D/g, "").slice(0, 11);
@@ -370,25 +487,78 @@ function initLeadForms() {
       phoneInput.value = formatted;
     });
 
-    form.addEventListener("submit", (event) => {
+    if (!canEnhanceSubmission) return;
+
+    form.addEventListener("submit", async (event) => {
       event.preventDefault();
-      if (!form.reportValidity()) return;
+      if (form.dataset.submitting === "true") return;
 
-      const button = form.querySelector(".cta-button");
-      if (!button) return;
+      populateLeadTrackingFields(form);
 
-      const originalText = button.innerHTML;
-      button.disabled = true;
-      button.textContent = "Solicitação enviada";
-      status.textContent = "Obrigado. Nossa equipe entrará em contato em até 24h.";
+        if (!form.reportValidity()) {
+          setLeadFormStatus(statusElement, leadStatusMessages.validation);
+          const invalidField = form.querySelector(":invalid");
+          invalidField?.focus();
+          return;
+        }
 
-      window.setTimeout(() => {
-        button.disabled = false;
-        button.innerHTML = originalText;
-        form.reset();
-      }, 2600);
+      const controller = new AbortController();
+      const timeoutId = window.setTimeout(() => controller.abort(), leadRequestTimeoutMs);
+
+      setLeadFormBusyState(form, button, true);
+      button.textContent = leadStatusMessages.loading;
+      setLeadFormStatus(statusElement, leadStatusMessages.loading);
+
+      try {
+        const response = await fetch(form.action, {
+          method: "POST",
+          body: new FormData(form),
+          headers: {
+            Accept: "application/json",
+            "X-Requested-With": "XMLHttpRequest",
+          },
+          credentials: "same-origin",
+          signal: controller.signal,
+        });
+
+        const rawResponse = await response.text();
+        let data = null;
+
+        if (rawResponse) {
+          try {
+            data = JSON.parse(rawResponse);
+          } catch (error) {
+            data = null;
+          }
+        }
+
+        if (response.ok && data?.ok === true) {
+          setLeadFormStatus(statusElement, leadStatusMessages.success);
+          form.reset();
+          populateLeadTrackingFields(form);
+          return;
+        }
+
+        setLeadFormStatus(statusElement, getLeadResponseMessage(response.status, data));
+
+        const invalidField = form.querySelector(":invalid");
+        invalidField?.focus();
+      } catch (error) {
+        const message =
+          error instanceof DOMException && error.name === "AbortError"
+            ? leadStatusMessages.timeout
+            : leadStatusMessages.network;
+
+        setLeadFormStatus(statusElement, message);
+      } finally {
+        window.clearTimeout(timeoutId);
+        restoreLeadButtonContent(button);
+        setLeadFormBusyState(form, button, false);
+      }
     });
   });
+
+  handleLeadFallbackStatus(forms);
 }
 
 function initMobileMotion() {
