@@ -4,7 +4,7 @@ declare(strict_types=1);
 date_default_timezone_set('America/Sao_Paulo');
 
 $to = 'comercial@agenciajv.com';
-$from = 'site@agenciajv.com';
+$from = 'site@agenciajv.online';
 $maxPayloadBytes = 16384;
 $cooldownSeconds = 20;
 
