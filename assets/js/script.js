@@ -1,23 +1,31 @@
 const services = [
   {
     name: "websites",
-    image: "assets/img/service-website.png",
-    alt: "Website: construção de sites e landing pages sob medida, responsivos e seguros.",
+    title: "Website",
+    description: "Construção de sites e landing pages sob medida, responsivos e seguros.",
+    desktop: { src: "assets/img/service-website.png", width: 1052, height: 454 },
+    mobile: { src: "assets/img/service-website-mobile.webp", width: 680, height: 454 },
   },
   {
     name: "tráfego pago",
-    image: "assets/img/service-traffic.png",
-    alt: "Tráfego pago: mídia paga estratégica em Google, Meta, TikTok e LinkedIn.",
+    title: "Tráfego pago",
+    description: "Mídia paga estratégica em Google, Meta, TikTok e LinkedIn com foco em aquisição rentável.",
+    desktop: { src: "assets/img/service-traffic.png", width: 920, height: 448 },
+    mobile: { src: "assets/img/service-traffic-mobile.webp", width: 450, height: 448 },
   },
   {
     name: "design gráfico",
-    image: "assets/img/service-design.png",
-    alt: "Design gráfico: criativos, identidade e peças visuais com padrão profissional.",
+    title: "Design gráfico",
+    description: "Criativos, identidade e peças visuais com padrão profissional.",
+    desktop: { src: "assets/img/service-design.png", width: 955, height: 428 },
+    mobile: { src: "assets/img/service-design-mobile.webp", width: 490, height: 428 },
   },
   {
     name: "estruturação estratégica",
-    image: "assets/img/service-strategy.png",
-    alt: "Estruturação estratégica: direção para organizar o marketing antes da execução.",
+    title: "Estruturação estratégica",
+    description: "Direção para organizar o marketing antes da execução.",
+    desktop: { src: "assets/img/service-strategy.png", width: 1050, height: 438 },
+    mobile: { src: "assets/img/service-strategy-mobile.webp", width: 550, height: 438 },
   },
 ];
 
@@ -102,6 +110,9 @@ function initServiceCarousel(state) {
   const previousButton = document.querySelector(".carousel-arrow--prev");
   const nextButton = document.querySelector(".carousel-arrow--next");
   const serviceStage = document.querySelector(".service-stage");
+  const serviceTitle = document.querySelector(".service-title");
+  const serviceDescription = document.querySelector(".service-description");
+  const mobileViewportQuery = window.matchMedia("(max-width: 860px)");
 
   if (
     !serviceImage ||
@@ -109,7 +120,9 @@ function initServiceCarousel(state) {
     !serviceDots.length ||
     !previousButton ||
     !nextButton ||
-    !serviceStage
+    !serviceStage ||
+    !serviceTitle ||
+    !serviceDescription
   ) {
     return;
   }
@@ -117,11 +130,29 @@ function initServiceCarousel(state) {
   let activeService = 0;
   let changingService = false;
   let touchStartX = 0;
+  const preloadedAssets = new Set();
 
-  services.forEach(({ image }) => {
+  const bindQuery = (query, handler) => {
+    if (query.addEventListener) {
+      query.addEventListener("change", handler);
+      return;
+    }
+
+    query.addListener(handler);
+  };
+
+  const getServiceAsset = (service) => (mobileViewportQuery.matches ? service.mobile : service.desktop);
+
+  const preloadServiceAsset = (index) => {
+    const nextIndex = (index + services.length) % services.length;
+    const asset = getServiceAsset(services[nextIndex]);
+    if (preloadedAssets.has(asset.src)) return;
+
     const preload = new Image();
-    preload.src = image;
-  });
+    preload.decoding = "async";
+    preload.src = asset.src;
+    preloadedAssets.add(asset.src);
+  };
 
   const syncServiceState = (index) => {
     const nextService = services[index];
@@ -139,8 +170,19 @@ function initServiceCarousel(state) {
       dot.setAttribute("aria-current", selected ? "true" : "false");
     });
 
-    serviceStage.setAttribute("aria-label", nextService.name);
+    serviceTitle.textContent = nextService.title;
+    serviceDescription.textContent = nextService.description;
+    serviceStage.setAttribute("aria-labelledby", serviceTabs[index].id);
     activeService = index;
+  };
+
+  const setServiceAsset = (index) => {
+    const asset = getServiceAsset(services[index]);
+    serviceImage.src = asset.src;
+    serviceImage.width = asset.width;
+    serviceImage.height = asset.height;
+    serviceImage.alt = "";
+    preloadServiceAsset(index + 1);
   };
 
   const getDirection = (rawIndex, normalizedIndex) => {
@@ -149,19 +191,21 @@ function initServiceCarousel(state) {
     return normalizedIndex > activeService ? 1 : -1;
   };
 
-  const updateService = (rawIndex) => {
-    const normalizedIndex = (rawIndex + services.length) % services.length;
-    if (changingService || normalizedIndex === activeService) return;
+  const renderService = (index) => {
+    syncServiceState(index);
+    setServiceAsset(index);
+  };
 
-    const nextService = services[normalizedIndex];
+  const updateService = (rawIndex, { animate = true, force = false } = {}) => {
+    const normalizedIndex = (rawIndex + services.length) % services.length;
+    if (changingService || (!force && normalizedIndex === activeService)) return;
+
     const direction = getDirection(rawIndex, normalizedIndex);
 
     serviceStage.style.setProperty("--carousel-direction", String(direction));
 
-    if (state.reduceMotion) {
-      serviceImage.src = nextService.image;
-      serviceImage.alt = nextService.alt;
-      syncServiceState(normalizedIndex);
+    if (state.reduceMotion || !animate) {
+      renderService(normalizedIndex);
       return;
     }
 
@@ -172,9 +216,7 @@ function initServiceCarousel(state) {
     window.setTimeout(() => {
       serviceImage.classList.remove("is-leaving");
       serviceImage.classList.add("is-entering");
-      serviceImage.src = nextService.image;
-      serviceImage.alt = nextService.alt;
-      syncServiceState(normalizedIndex);
+      renderService(normalizedIndex);
 
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
@@ -186,7 +228,7 @@ function initServiceCarousel(state) {
     }, 210);
   };
 
-  syncServiceState(activeService);
+  renderService(activeService);
 
   document.querySelectorAll("[data-service]").forEach((control) => {
     control.addEventListener("click", () => {
@@ -236,6 +278,11 @@ function initServiceCarousel(state) {
     },
     { passive: true },
   );
+
+  bindQuery(mobileViewportQuery, () => {
+    if (changingService) return;
+    renderService(activeService);
+  });
 }
 
 function initPointerDepth(state) {
@@ -591,6 +638,7 @@ function initMobileMotion() {
 }
 
 const motionState = observeMotionPreference();
+root.classList.add("reveal-ready");
 
 initRevealAnimations(motionState);
 initServiceCarousel(motionState);
