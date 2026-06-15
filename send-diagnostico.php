@@ -166,12 +166,7 @@ try {
     send_smtp_message($mailConfig, $subject, $messageBody, $email);
 } catch (Throwable $exception) {
     $mailSent = false;
-    log_smtp_failure(
-        $formOriginRaw,
-        $redirectAnchor,
-        $exception->getMessage(),
-        isset($mailConfig) && is_array($mailConfig) ? $mailConfig : []
-    );
+    log_smtp_failure($exception->getMessage());
 }
 
 if (!$mailSent) {
@@ -428,44 +423,44 @@ function send_smtp_message(array $config, string $subject, string $messageBody, 
 
     $socket = @stream_socket_client($remoteSocket, $errno, $errstr, 20, STREAM_CLIENT_CONNECT, $context);
     if (!is_resource($socket)) {
-        throw new RuntimeException(sprintf('SMTP connection failed (%s): %s', (string) $errno, $errstr));
+        throw build_smtp_stage_exception('CONNECT', $host, $port);
     }
 
     stream_set_timeout($socket, 20);
 
     try {
-        smtp_expect_response($socket, [220], 'server greeting');
+        smtp_expect_response($socket, [220], 'SERVER_GREETING', $host, $port);
 
         $ehloHost = get_smtp_ehlo_host();
-        $ehloResponse = smtp_send_command($socket, 'EHLO ' . $ehloHost, [250]);
+        $ehloResponse = smtp_send_command($socket, 'EHLO ' . $ehloHost, [250], 'EHLO', $host, $port);
 
         if ($port !== 465) {
             $supportsStartTls = smtp_response_contains($ehloResponse, 'STARTTLS');
             if ($port === 587 && !$supportsStartTls) {
-                throw new RuntimeException('SMTP server does not advertise STARTTLS on port 587.');
+                throw build_smtp_stage_exception('STARTTLS', $host, $port);
             }
 
             if ($supportsStartTls) {
                 if (!defined('STREAM_CRYPTO_METHOD_TLS_CLIENT')) {
-                    throw new RuntimeException('TLS support is not available in this PHP environment.');
+                    throw build_smtp_stage_exception('TLS_NEGOTIATION', $host, $port);
                 }
 
-                smtp_send_command($socket, 'STARTTLS', [220]);
+                smtp_send_command($socket, 'STARTTLS', [220], 'STARTTLS', $host, $port);
                 $cryptoEnabled = @stream_socket_enable_crypto($socket, true, STREAM_CRYPTO_METHOD_TLS_CLIENT);
                 if ($cryptoEnabled !== true) {
-                    throw new RuntimeException('Unable to enable TLS encryption for SMTP.');
+                    throw build_smtp_stage_exception('TLS_NEGOTIATION', $host, $port);
                 }
 
-                smtp_send_command($socket, 'EHLO ' . $ehloHost, [250]);
+                smtp_send_command($socket, 'EHLO ' . $ehloHost, [250], 'EHLO_AFTER_TLS', $host, $port);
             }
         }
 
-        smtp_send_command($socket, 'AUTH LOGIN', [334]);
-        smtp_send_command($socket, base64_encode($config['SMTP_USERNAME']), [334]);
-        smtp_send_command($socket, base64_encode($config['SMTP_PASSWORD']), [235]);
-        smtp_send_command($socket, 'MAIL FROM:<' . $config['SMTP_FROM_EMAIL'] . '>', [250]);
-        smtp_send_command($socket, 'RCPT TO:<' . $config['SMTP_TO_EMAIL'] . '>', [250, 251]);
-        smtp_send_command($socket, 'DATA', [354]);
+        smtp_send_command($socket, 'AUTH LOGIN', [334], 'AUTH_LOGIN', $host, $port);
+        smtp_send_command($socket, base64_encode($config['SMTP_USERNAME']), [334], 'AUTH_USERNAME', $host, $port);
+        smtp_send_command($socket, base64_encode($config['SMTP_PASSWORD']), [235], 'AUTH_PASSWORD', $host, $port);
+        smtp_send_command($socket, 'MAIL FROM:<' . $config['SMTP_FROM_EMAIL'] . '>', [250], 'MAIL_FROM', $host, $port);
+        smtp_send_command($socket, 'RCPT TO:<' . $config['SMTP_TO_EMAIL'] . '>', [250, 251], 'RCPT_TO', $host, $port);
+        smtp_send_command($socket, 'DATA', [354], 'DATA', $host, $port);
 
         $headers = [
             'Date: ' . date('r'),
@@ -482,9 +477,9 @@ function send_smtp_message(array $config, string $subject, string $messageBody, 
             . "\r\n\r\n"
             . smtp_escape_body($messageBody);
 
-        smtp_write($socket, $payload . "\r\n.\r\n");
-        smtp_expect_response($socket, [250], 'message payload');
-        smtp_send_command($socket, 'QUIT', [221]);
+        smtp_write($socket, $payload . "\r\n.\r\n", 'MESSAGE_PAYLOAD', $host, $port);
+        smtp_expect_response($socket, [250], 'MESSAGE_PAYLOAD', $host, $port);
+        smtp_send_command($socket, 'QUIT', [221], 'QUIT', $host, $port);
     } finally {
         if (is_resource($socket)) {
             fclose($socket);
@@ -492,25 +487,27 @@ function send_smtp_message(array $config, string $subject, string $messageBody, 
     }
 }
 
-function smtp_send_command($socket, string $command, array $expectedCodes): array
+function smtp_send_command($socket, string $command, array $expectedCodes, string $stage, string $host, int $port): array
 {
-    smtp_write($socket, $command . "\r\n");
+    try {
+        smtp_write($socket, $command . "\r\n", $stage, $host, $port);
 
-    return smtp_expect_response($socket, $expectedCodes, $command);
+        return smtp_expect_response($socket, $expectedCodes, $stage, $host, $port);
+    } catch (Throwable $exception) {
+        throw build_smtp_stage_exception($stage, $host, $port);
+    }
 }
 
-function smtp_expect_response($socket, array $expectedCodes, string $context): array
+function smtp_expect_response($socket, array $expectedCodes, string $stage, string $host, int $port): array
 {
-    $response = smtp_read_response($socket);
+    try {
+        $response = smtp_read_response($socket);
+    } catch (Throwable $exception) {
+        throw build_smtp_stage_exception($stage, $host, $port);
+    }
+
     if (!in_array($response['code'], $expectedCodes, true)) {
-        throw new RuntimeException(
-            sprintf(
-                'SMTP command failed during %s. Response %d: %s',
-                $context,
-                $response['code'],
-                implode(' | ', $response['lines'])
-            )
-        );
+        throw build_smtp_stage_exception($stage, $host, $port);
     }
 
     return $response;
@@ -549,14 +546,14 @@ function smtp_read_response($socket): array
     throw new RuntimeException('SMTP connection closed unexpectedly.');
 }
 
-function smtp_write($socket, string $payload): void
+function smtp_write($socket, string $payload, string $stage, string $host, int $port): void
 {
     $remaining = $payload;
 
     while ($remaining !== '') {
         $written = fwrite($socket, $remaining);
         if ($written === false || $written === 0) {
-            throw new RuntimeException('Failed to write data to SMTP socket.');
+            throw build_smtp_stage_exception($stage, $host, $port);
         }
 
         $remaining = (string) substr($remaining, $written);
@@ -633,22 +630,25 @@ function generate_message_id(string $fromEmail): string
     return $localPart . '@' . $domain;
 }
 
-function log_smtp_failure(string $formOrigin, string $anchor, string $details, array $mailConfig = []): void
+function build_smtp_stage_exception(string $stage, string $host, int $port): RuntimeException
 {
-    $to = isset($mailConfig['SMTP_TO_EMAIL']) ? (string) $mailConfig['SMTP_TO_EMAIL'] : 'unknown';
-    $from = isset($mailConfig['SMTP_FROM_EMAIL']) ? (string) $mailConfig['SMTP_FROM_EMAIL'] : 'unknown';
+    if (is_smtp_auth_stage($stage)) {
+        return new RuntimeException('SMTP authentication failed. Check username/password.');
+    }
 
-    error_log(
-        sprintf(
-            '[send-diagnostico] SMTP send failed; to=%s; from=%s; origin=%s; anchor=%s; remote_addr=%s; details=%s',
-            $to,
-            $from,
-            $formOrigin,
-            $anchor,
-            $_SERVER['REMOTE_ADDR'] ?? 'unknown',
-            $details
-        )
+    return new RuntimeException(
+        sprintf('SMTP stage=%s host=%s port=%d', $stage, $host, $port)
     );
+}
+
+function is_smtp_auth_stage(string $stage): bool
+{
+    return in_array($stage, ['AUTH_LOGIN', 'AUTH_USERNAME', 'AUTH_PASSWORD'], true);
+}
+
+function log_smtp_failure(string $message): void
+{
+    error_log($message);
 }
 
 function encode_mail_subject(string $subject): string
